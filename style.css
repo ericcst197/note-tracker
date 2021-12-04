@@ -1,0 +1,24 @@
+body{
+    box-sizing: border-box;
+    background-color: rgba(206, 229, 160, 0.7);
+}
+
+.top-div{
+    background-color: rgb(165, 206, 83);
+}
+
+
+
+.col{
+    padding: 1rem
+}
+
+.card{
+    padding: 1.2rem
+}
+
+.button-div{
+    display: inline-flex;
+    justify-content: space-around ;
+}
+
