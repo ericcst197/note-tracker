@@ -1,7 +1,17 @@
 const form = document.querySelector('form');
 const notes = document.querySelector('#notes');
+const modal = document.querySelector('.mode');
+const overlay = document.querySelector('.overlay');
+
 const titleInput = form.elements.title;
 const noteInput = form.elements.note;
+
+const closeNote = function(){
+    modal.classList.add('hidden');
+    overlay.classList.add('hidden');
+};
+
+
 
 // let noteArr = []
 let noteID = 1;
@@ -47,15 +57,36 @@ function addNote(note){
     btnDiv.append(viewBtn, delBtn);
     btnDiv.classList.add('button-div')
     viewBtn.textContent = 'View Details';
-    viewBtn.addEventListener('click',function(){
-        console.log("View Button clicked!")
-    });
+    viewBtn.addEventListener('click',viewNote);
     viewBtn.classList.add('btn', 'btn-primary', 'btn-sm','col-5','viewDetails')
     delBtn.textContent = 'Delete';
     delBtn.addEventListener('click',delNote);
     delBtn.classList.add('btn', 'btn-danger','btn-sm', 'col-5')
 } 
 
+//view note with overlay background
+function viewNote(e){
+    modal.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+
+    let divID = e.target.parentNode.parentNode.parentNode.dataset.id
+    let note = getDataFromStorage()
+    let noteObj = note.find(item =>{
+        return item.id === parseInt(divID);
+    });
+    const selectedTitle = noteObj.title;
+    const selectedText = noteObj.text;
+    const btnCloseModal = document.createElement('button')
+    btnCloseModal.addEventListener('click',closeNote)
+    btnCloseModal.innerHTML = '&times;'
+    btnCloseModal.classList.add('close-mode')
+    modal.innerHTML = `
+    <h5 class="mb-3">${selectedTitle}</h5>
+    <p>${selectedText}</p>
+    `
+    modal.append(btnCloseModal);
+    overlay.addEventListener('click', closeNote);
+}
 
 function delNote(e) {
     let del = this.parentNode.parentNode.parentNode
@@ -74,14 +105,14 @@ form.addEventListener('submit',function(e){
     
     if(!noteInput.value){
         alert('Please write some notes before adding.')
-    } 
-    let note = getDataFromStorage()
-    let noteItem = new Note(noteID, titleInput.value, noteInput.value);
-    noteID++
-    note.push(noteItem);
-    localStorage.setItem('note', JSON.stringify(note))
-    addNote(noteItem);
-    titleInput.value = ''
-    noteInput.value = ''
-
+    } else {
+        let note = getDataFromStorage()
+        let noteItem = new Note(noteID, titleInput.value, noteInput.value);
+        noteID++
+        note.push(noteItem);
+        localStorage.setItem('note', JSON.stringify(note))
+        addNote(noteItem);
+        titleInput.value = ''
+        noteInput.value = ''
+    }
 });
