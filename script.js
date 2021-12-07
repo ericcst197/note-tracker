@@ -11,8 +11,6 @@ const closeNote = function(){
     overlay.classList.add('hidden');
 };
 
-
-
 // let noteArr = []
 let noteID = 1;
 function Note(id, title, content){
@@ -24,7 +22,8 @@ function Note(id, title, content){
 function getDataFromStorage(){
     return localStorage.getItem("note") ? JSON.parse(localStorage.getItem("note")) : [];
 }
-  
+
+//Add note 
 function addNote(note){
     const newNote = document.createElement('div');
     const cardCol = document.createElement('div');
@@ -88,6 +87,20 @@ function viewNote(e){
     overlay.addEventListener('click', closeNote);
 }
 
+//Display all notes
+function displayNotes(){
+    let note = getDataFromStorage();
+    if(note.length > 0){
+        noteID = note[note.length -1].id;
+        noteID++;
+    } else {
+        noteID =1;
+    }
+    note.forEach(item => addNote(item));
+}
+document.addEventListener("DOMContentLoaded", displayNotes);
+
+//Delete Note
 function delNote(e) {
     let del = this.parentNode.parentNode.parentNode
     del.remove()
