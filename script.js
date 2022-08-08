@@ -2,9 +2,12 @@ const form = document.querySelector('form');
 const notes = document.querySelector('#notes');
 const modal = document.querySelector('.mode');
 const overlay = document.querySelector('.overlay');
+const btnAdd = document.querySelector('#add');
 
 const titleInput = form.elements.title;
 const noteInput = form.elements.note;
+
+let divID
 
 const closeNote = function(){
     modal.classList.add('hidden');
@@ -30,8 +33,8 @@ function addNote(note){
     const title = document.createElement('h5');
     const content = document.createElement('p');
     const btnDiv = document.createElement('div');
-    const viewBtn = document.createElement('button');
-    const delBtn = document.createElement('button');
+    const btnView = document.createElement('button');
+    const btnDel = document.createElement('button');
     
     //Content
     notes.append(cardCol);
@@ -53,14 +56,14 @@ function addNote(note){
     content.classList.add('card-text');
 
     //Buttons
-    btnDiv.append(viewBtn, delBtn);
+    btnDiv.append(btnView, btnDel);
     btnDiv.classList.add('button-div')
-    viewBtn.textContent = 'View Details';
-    viewBtn.addEventListener('click',viewNote);
-    viewBtn.classList.add('btn', 'btn-primary', 'btn-sm','col-5','viewDetails')
-    delBtn.textContent = 'Delete';
-    delBtn.addEventListener('click',delNote);
-    delBtn.classList.add('btn', 'btn-danger','btn-sm', 'col-5')
+    btnView.textContent = 'View Details';
+    btnView.addEventListener('click',viewNote);
+    btnView.classList.add('btn', 'btn-primary', 'btn-sm','col-5','viewDetails')
+    btnDel.textContent = 'Delete';
+    btnDel.addEventListener('click',delNote);
+    btnDel.classList.add('btn', 'btn-danger','btn-sm', 'col-5')
 } 
 
 //view note with overlay background
@@ -68,23 +71,45 @@ function viewNote(e){
     modal.classList.remove('hidden');
     overlay.classList.remove('hidden');
 
-    let divID = e.target.parentNode.parentNode.parentNode.dataset.id
+    divID = e.target.parentNode.parentNode.parentNode.dataset.id
     let note = getDataFromStorage()
     let noteObj = note.find(item =>{
         return item.id === parseInt(divID);
     });
     const selectedTitle = noteObj.title;
     const selectedText = noteObj.text;
-    const btnCloseModal = document.createElement('button')
+    const btnCloseModal = document.createElement('button');
+    const btnEdit = document.createElement('button');
     btnCloseModal.addEventListener('click',closeNote)
     btnCloseModal.innerHTML = '&times;'
     btnCloseModal.classList.add('close-mode')
+    btnEdit.addEventListener('click',editNote)
+    btnEdit.innerHTML = 'Edit'
+    btnEdit.classList.add('btn', 'btn-info', 'text-white','mt-2')
+
     modal.innerHTML = `
     <h5 class="mb-3">${selectedTitle}</h5>
     <p>${selectedText}</p>
     `
     modal.append(btnCloseModal);
+    modal.append(btnEdit);
     overlay.addEventListener('click', closeNote);
+}
+
+//Edit note 
+function editNote(){
+    closeNote();
+    btnAdd.innerHTML = 'Update';
+    btnAdd.classList.remove('btn.success');
+    btnAdd.classList.add('btn-info');
+    let note = getDataFromStorage();
+    let noteObj = note.find(item =>{
+        return item.id === parseInt(divID);
+    });
+    const selectedTitle = noteObj.title;
+    const selectedText = noteObj.text;
+    titleInput.value = selectedTitle;
+    noteInput.value = selectedText;
 }
 
 //Display all notes
@@ -102,9 +127,14 @@ document.addEventListener("DOMContentLoaded", displayNotes);
 
 //Delete Note
 function delNote(e) {
+    if(btnAdd.innerHTML === 'Update'){
+        alert('Can\'t delete..Please update the note first.')
+        return 
+    } 
+
     let del = this.parentNode.parentNode.parentNode
     del.remove()
-    let divID = e.target.parentNode.parentNode.parentNode.dataset.id
+    divID = e.target.parentNode.parentNode.parentNode.dataset.id
     let note = getDataFromStorage()
     let newNoteList = note.filter(item =>{
         return item.id !== parseInt(divID);
@@ -118,7 +148,9 @@ form.addEventListener('submit',function(e){
     
     if(!noteInput.value){
         alert('Please write some notes before adding.')
-    } else {
+    
+    } else if(noteInput.value && e.target[2].innerHTML === 'Add Note'){
+        // Add note from the form
         let note = getDataFromStorage()
         let noteItem = new Note(noteID, titleInput.value, noteInput.value);
         noteID++
@@ -127,5 +159,22 @@ form.addEventListener('submit',function(e){
         addNote(noteItem);
         titleInput.value = ''
         noteInput.value = ''
+    } else {
+        // Update Note from the form
+        let note = getDataFromStorage()
+        let noteObj = note.find(item =>{
+            return item.id === parseInt(divID);
+        });
+        noteObj.title = titleInput.value;
+        noteObj.text = noteInput.value;
+        localStorage.setItem('note', JSON.stringify(note));
+        notes.innerHTML = '';
+        displayNotes();
+        titleInput.value = '';
+        noteInput.value = '';
+        btnAdd.innerHTML = 'Add Note';
+        btnAdd.classList.remove('btn-info');
+        btnAdd.classList.add('btn.success');
+        // btnAdd.innerHTML = 'Add Note'
     }
 });
